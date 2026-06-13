@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ground</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #1e1e1e;
+    --border-mid: #2a2a2a;
+    --text: #e8e3dc;
+    --muted: #5a5550;
+    --win: #a8c5a0;
+    --win-dim: #1a2a18;
+    --challenge: #c5a8a0;
+    --challenge-dim: #2a1a18;
+    --accent: #c8b89a;
+    --font-serif: 'EB Garamond', Georgia, serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  .header { padding: 52px 28px 20px; }
+  .header h1 {
+    font-family: var(--font-serif);
+    font-size: 38px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .header .tagline {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    padding: 0 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 10px 0;
+    margin-right: 28px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+  /* MAIN */
+  .main { flex: 1; padding: 28px 28px 60px; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* STATUS */
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    min-height: 16px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .status-dot.syncing { background: var(--accent); animation: pulse 1.4s infinite; }
+  .status-dot.ok { background: var(--win); }
+  .status-dot.err { background: var(--challenge); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* STEP LABEL */
+  .step-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* WIN / CHALLENGE */
+  .moment-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .moment-btn {
+    padding: 16px 12px;
+    border: 1px solid var(--border-mid);
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.18s;
+    font-family: var(--font-sans);
+  }
+  .moment-btn .mb-symbol { font-size: 18px; margin-bottom: 6px; display: block; }
+  .moment-btn .mb-label {
+    font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; display: block; color: var(--muted);
+  }
+  .moment-btn.win-btn:hover, .moment-btn.win-btn.selected {
+    border-color: var(--win); background: var(--win-dim);
+  }
+  .moment-btn.win-btn.selected .mb-label { color: var(--win); }
+  .moment-btn.challenge-btn:hover, .moment-btn.challenge-btn.selected {
+    border-color: var(--challenge); background: var(--challenge-dim);
+  }
+  .moment-btn.challenge-btn.selected .mb-label { color: var(--challenge); }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* FEELING INPUT */
+  .feeling-block { margin-bottom: 22px; }
+  .field-label {
+    font-family: var(--font-serif);
+    font-size: 13px;
+    font-style: italic;
+    color: var(--accent);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .field-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 9px;
+    line-height: 1.5;
+  }
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border-mid);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.18s;
+    -webkit-appearance: none;
+  }
+  input[type="text"]::placeholder { color: var(--muted); font-style: italic; }
+  input[type="text"]:focus { border-color: #3a3530; }
+
+  /* ANTECEDENT */
+  .antecedent-block { margin-bottom: 22px; }
+
+  /* AVP STEPS */
+  .avp-block { margin-bottom: 22px; }
+  textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border-mid);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 12px 14px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.18s;
+    -webkit-appearance: none;
+  }
+  textarea::placeholder { color: var(--muted); font-style: italic; }
+  textarea:focus { border-color: #3a3530; }
+
+  /* SUBMIT */
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: opacity 0.2s;
+  }
+  .submit-btn:disabled { opacity: 0.3; cursor: default; }
+  .submit-btn:not(:disabled):hover { opacity: 0.85; }
+
+  /* HISTORY */
+  .history-empty { color: var(--muted); font-size: 13px; padding-top: 12px; font-style: italic; }
+  .history-list { display: flex; flex-direction: column; gap: 14px; }
+  .history-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    background: var(--surface);
+  }
+  .hc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .hc-left { display: flex; flex-direction: column; gap: 4px; }
+  .hc-type {
+    font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 500;
+  }
+  .hc-type.win { color: var(--win); }
+  .hc-type.challenge { color: var(--challenge); }
+  .hc-feeling {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .hc-date { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; }
+  .hc-antecedent {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hc-avp { display: flex; flex-direction: column; gap: 10px; }
+  .hc-avp-letter {
+    font-family: var(--font-serif);
+    font-size: 11px;
+    font-style: italic;
+    color: var(--accent);
+    margin-bottom: 2px;
+    display: block;
+  }
+  .hc-avp-text { font-size: 13px; color: var(--text); line-height: 1.55; opacity: 0.85; }
+
+  /* RESULTS */
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .results-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 16px;
+    background: var(--surface);
+  }
+  .rc-number {
+    font-family: var(--font-serif);
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .rc-number.win { color: var(--win); }
+  .rc-number.challenge { color: var(--challenge); }
+  .rc-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .streak-bar {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 16px;
+    background: var(--surface);
+    margin-bottom: 14px;
+  }
+  .sb-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .sb-dots { display: flex; gap: 5px; flex-wrap: wrap; }
+  .sb-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-mid); }
+  .sb-dot.win { background: var(--win); }
+  .sb-dot.challenge { background: var(--challenge); }
+
+  /* TOP FEELINGS */
+  .feelings-bar {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 16px;
+    background: var(--surface);
+  }
+  .feelings-list { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+  .feeling-row { display: flex; justify-content: space-between; align-items: center; }
+  .feeling-name { font-family: var(--font-serif); font-size: 15px; font-style: italic; color: var(--text); }
+  .feeling-count { font-size: 11px; color: var(--muted); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg);
+    padding: 10px 20px;
+    border-radius: 40px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.06em;
+    opacity: 0; transition: all 0.3s;
+    pointer-events: none; white-space: nowrap; z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .loading { color: var(--muted); font-size: 12px; padding: 12px 0; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>ground</h1>
+    <div class="tagline">acknowledge · validate · permit</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="log">Log</div>
+    <div class="tab" data-tab="results">Results</div>
+    <div class="tab" data-tab="history">History</div>
+  </div>
+
+  <div class="main">
+
+    <!-- LOG VIEW -->
+    <div class="view active" id="view-log">
+      <div class="status" id="log-status">
+        <div class="status-dot" id="log-dot"></div>
+        <span id="log-status-text"></span>
+      </div>
+
+      <div class="step-label">What kind of moment is this?</div>
+      <div class="moment-row">
+        <button class="moment-btn win-btn" onclick="selectType('win')">
+          <span class="mb-symbol">○</span>
+          <span class="mb-label">Win</span>
+        </button>
+        <button class="moment-btn challenge-btn" onclick="selectType('challenge')">
+          <span class="mb-symbol">△</span>
+          <span class="mb-label">Challenge</span>
+        </button>
+      </div>
+
+      <hr class="divider">
+
+      <div class="feeling-block">
+        <span class="field-label">Feeling</span>
+        <div class="field-hint">Name the emotion in a word or two.</div>
+        <input type="text" id="feeling" placeholder="e.g. proud, defeated, anxious…" maxlength="40">
+      </div>
+
+      <div class="antecedent-block">
+        <span class="field-label">What just happened?</span>
+        <div class="field-hint">The context right before this feeling arrived.</div>
+        <textarea id="antecedent" rows="2" placeholder="Right before this, I…"></textarea>
+      </div>
+
+      <hr class="divider">
+
+      <div class="avp-block">
+        <span class="field-label">Acknowledge</span>
+        <div class="field-hint">Label what you're feeling. Name it plainly.</div>
+        <textarea id="acknowledge" rows="3" placeholder="This moment feels…"></textarea>
+      </div>
+
+      <div class="avp-block">
+        <span class="field-label">Validate</span>
+        <div class="field-hint">Tell yourself why your feeling makes sense.</div>
+        <textarea id="validate" rows="3" placeholder="It makes sense that I feel this way because…"></textarea>
+      </div>
+
+      <div class="avp-block">
+        <span class="field-label">Permit</span>
+        <div class="field-hint">Give yourself full permission to feel exactly this.</div>
+        <textarea id="permit" rows="2" placeholder="I have full permission to…"></textarea>
+      </div>
+
+      <button class="submit-btn" id="submit-btn" onclick="submitEntry()">Record this moment</button>
+    </div>
+
+    <!-- RESULTS VIEW -->
+    <div class="view" id="view-results">
+      <div class="status" id="results-status">
+        <div class="status-dot syncing" id="results-dot"></div>
+        <span id="results-status-text">loading…</span>
+      </div>
+      <div class="results-grid">
+        <div class="results-card">
+          <div class="rc-number win" id="win-count">—</div>
+          <div class="rc-label">Wins</div>
+        </div>
+        <div class="results-card">
+          <div class="rc-number challenge" id="challenge-count">—</div>
+          <div class="rc-label">Challenges</div>
+        </div>
+      </div>
+      <div class="streak-bar">
+        <div class="sb-label">Last 30 moments</div>
+        <div class="sb-dots" id="streak-dots"></div>
+      </div>
+      <div class="feelings-bar">
+        <div class="sb-label">Most frequent feelings</div>
+        <div class="feelings-list" id="feelings-list">
+          <span style="font-size:11px;color:var(--muted);font-style:italic;">No entries yet</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY VIEW -->
+    <div class="view" id="view-history">
+      <div class="status" id="history-status">
+        <div class="status-dot syncing" id="history-dot"></div>
+        <span id="history-status-text">loading…</span>
+      </div>
+      <div class="history-filter" style="display:flex;gap:8px;margin-bottom:20px;">
+        <button class="filter-btn active" data-filter="all" onclick="filterHistory('all')">All</button>
+        <button class="filter-btn" data-filter="win" onclick="filterHistory('win')">○ Wins</button>
+        <button class="filter-btn" data-filter="challenge" onclick="filterHistory('challenge')">△ Challenges</button>
+      </div>
+      <div id="history-list"><div class="loading">loading entries…</div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<style>
+  .filter-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border-mid);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .filter-btn.active { border-color: var(--text); color: var(--text); }
+</style>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbeWl_IYfV8UojHqsLOXUo4nW9pKlf4edgvfTfmyMjdw7nGDj9ZVmKF3cmHr_0qik2/exec';
+
+  let selectedType = null;
+  let allEntries = [];
+  let activeFilter = 'all';
+
+  // TABS
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('view-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'history') loadHistory();
+      if (tab.dataset.tab === 'results') loadResults();
+    });
+  });
+
+  function selectType(type) {
+    selectedType = type;
+    document.querySelectorAll('.moment-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector(`.${type}-btn`).classList.add('selected');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  function setStatus(dotId, textId, state, msg) {
+    document.getElementById(dotId).className = 'status-dot ' + state;
+    document.getElementById(textId).textContent = msg;
+  }
+
+  async function submitEntry() {
+    const feeling     = document.getElementById('feeling').value.trim();
+    const antecedent  = document.getElementById('antecedent').value.trim();
+    const acknowledge = document.getElementById('acknowledge').value.trim();
+    const validate    = document.getElementById('validate').value.trim();
+    const permit      = document.getElementById('permit').value.trim();
+
+    if (!selectedType) { showToast('Select win or challenge first'); return; }
+    if (!feeling && !acknowledge && !validate && !permit && !antecedent) {
+      showToast('Fill in at least one field'); return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    setStatus('log-dot', 'log-status-text', 'syncing', 'saving…');
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'log', type: selectedType,
+          feeling, antecedent, acknowledge, validate, permit,
+          timestamp: new Date().toISOString()
+        })
+      });
+      setStatus('log-dot', 'log-status-text', 'ok', 'saved');
+      showToast(selectedType === 'win' ? 'Moment recorded ○' : 'Moment recorded △');
+      // reset
+      selectedType = null;
+      document.querySelectorAll('.moment-btn').forEach(b => b.classList.remove('selected'));
+      ['feeling','antecedent','acknowledge','validate','permit'].forEach(id => {
+        const el = document.getElementById(id);
+        el.value = '';
+      });
+      setTimeout(() => setStatus('log-dot', 'log-status-text', '', ''), 3000);
+    } catch(e) {
+      setStatus('log-dot', 'log-status-text', 'err', 'not saved — check connection');
+    }
+    btn.disabled = false;
+  }
+
+  async function loadHistory() {
+    const list = document.getElementById('history-list');
+    list.innerHTML = '<div class="loading">loading…</div>';
+    setStatus('history-dot', 'history-status-text', 'syncing', 'loading…');
+    try {
+      const res = await fetch(SCRIPT_URL + '?action=history');
+      const data = await res.json();
+      allEntries = data.entries || [];
+      filterHistory(activeFilter);
+      setStatus('history-dot', 'history-status-text', 'ok', `${allEntries.length} entries`);
+    } catch(e) {
+      list.innerHTML = '<div class="history-empty">Could not load entries.</div>';
+      setStatus('history-dot', 'history-status-text', 'err', 'connection error');
+    }
+  }
+
+  function filterHistory(filter) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === filter);
+    });
+    const filtered = filter === 'all' ? allEntries : allEntries.filter(e => e.type === filter);
+    renderHistory(filtered);
+  }
+
+  function renderHistory(entries) {
+    const list = document.getElementById('history-list');
+    if (!entries.length) {
+      list.innerHTML = '<div class="history-empty">No moments recorded yet.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    [...entries].reverse().forEach(e => {
+      const card = document.createElement('div');
+      card.className = 'history-card';
+      const d = new Date(e.timestamp);
+      const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+        ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+      const feelingHtml = e.feeling
+        ? `<div class="hc-feeling">${escHtml(e.feeling)}</div>` : '';
+      const antecedentHtml = e.antecedent
+        ? `<div class="hc-antecedent">${escHtml(e.antecedent)}</div>` : '';
+
+      let avpHtml = '';
+      if (e.acknowledge) avpHtml += `<div class="hc-avp-row"><span class="hc-avp-letter">Acknowledge</span><div class="hc-avp-text">${escHtml(e.acknowledge)}</div></div>`;
+      if (e.validate)    avpHtml += `<div class="hc-avp-row"><span class="hc-avp-letter">Validate</span><div class="hc-avp-text">${escHtml(e.validate)}</div></div>`;
+      if (e.permit)      avpHtml += `<div class="hc-avp-row"><span class="hc-avp-letter">Permit</span><div class="hc-avp-text">${escHtml(e.permit)}</div></div>`;
+
+      card.innerHTML = `
+        <div class="hc-top">
+          <div class="hc-left">
+            <span class="hc-type ${e.type}">${e.type === 'win' ? '○ Win' : '△ Challenge'}</span>
+            ${feelingHtml}
+          </div>
+          <span class="hc-date">${dateStr}</span>
+        </div>
+        ${antecedentHtml}
+        ${avpHtml ? `<div class="hc-avp">${avpHtml}</div>` : ''}
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  async function loadResults() {
+    setStatus('results-dot', 'results-status-text', 'syncing', 'loading…');
+    try {
+      const res = await fetch(SCRIPT_URL + '?action=history');
+      const data = await res.json();
+      const entries = data.entries || [];
+      document.getElementById('win-count').textContent = entries.filter(e => e.type === 'win').length;
+      document.getElementById('challenge-count').textContent = entries.filter(e => e.type === 'challenge').length;
+      renderDots(entries);
+      renderTopFeelings(entries);
+      setStatus('results-dot', 'results-status-text', 'ok', `${entries.length} total`);
+    } catch(e) {
+      setStatus('results-dot', 'results-status-text', 'err', 'connection error');
+    }
+  }
+
+  function renderDots(entries) {
+    const container = document.getElementById('streak-dots');
+    const last30 = entries.slice(-30);
+    container.innerHTML = '';
+    if (!last30.length) {
+      container.innerHTML = '<span style="font-size:11px;color:var(--muted);font-style:italic;">No moments yet</span>';
+      return;
+    }
+    last30.forEach(e => {
+      const dot = document.createElement('div');
+      dot.className = 'sb-dot ' + e.type;
+      container.appendChild(dot);
+    });
+  }
+
+  function renderTopFeelings(entries) {
+    const container = document.getElementById('feelings-list');
+    const counts = {};
+    entries.forEach(e => {
+      if (e.feeling) {
+        const key = e.feeling.toLowerCase().trim();
+        counts[key] = (counts[key] || 0) + 1;
+      }
+    });
+    const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 5);
+    if (!sorted.length) {
+      container.innerHTML = '<span style="font-size:11px;color:var(--muted);font-style:italic;">No feelings named yet</span>';
+      return;
+    }
+    container.innerHTML = sorted.map(([name, count]) => `
+      <div class="feeling-row">
+        <span class="feeling-name">${escHtml(name)}</span>
+        <span class="feeling-count">${count}×</span>
+      </div>
+    `).join('');
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
